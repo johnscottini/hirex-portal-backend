@@ -11,7 +11,8 @@
 	<groupId>com.hirex</groupId>
 	<artifactId>portal</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>portal</name>
+    <packaging>pom</packaging>
+    <name>portal</name>
 	<description>HireX application management system</description>
 	<url/>
 	<licenses>
@@ -20,7 +21,13 @@
 	<developers>
 		<developer/>
 	</developers>
-	<scm>
+    <modules>
+        <module>hirex-users</module>
+		<module>hirex-vacancy</module>
+		<module>hirex-config</module>
+		<module>hirex-gateway</module>
+	</modules>
+    <scm>
 		<connection/>
 		<developerConnection/>
 		<tag/>
@@ -46,10 +53,6 @@
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 			<version>42.6.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>
