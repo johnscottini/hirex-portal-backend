@@ -1,5 +1,6 @@
 package com.hirex.users.service;
 
+import com.google.common.base.Strings;
 import com.hirex.config.exception.exceptions.BusinessException;
 import com.hirex.users.dto.UserDto;
 import com.hirex.users.dto.UserResumoDto;
@@ -7,6 +8,10 @@ import com.hirex.users.mapper.UserMapper;
 import com.hirex.users.repository.UserRepository;
 import com.querydsl.core.BooleanBuilder;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,12 +21,26 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class UserService {
 
+    protected PageRequest getPage(Integer pageIndex, Integer pageSizer, String sortField){
+        return PageRequest.of(pageIndex, pageSizer, getSortExp(sortField));
+    }
+    protected Sort getSortExp(String sortField) {
+        if(Strings.isNullOrEmpty(sortField)){
+            return Sort.unsorted();
+        }
+
+        var direction = Sort.Direction.ASC;
+        return Sort.by(direction, sortField);
+    }
+
+
     private final UserMapper userMapper;
     private final UserRepository userRepository;
 
-    public List<UserResumoDto> findAll() {
+    public List<UserResumoDto> findAll(Integer pageIndex, Integer pageSize, String sortField) {
 
-        var users = userRepository.findAll();
+
+        var users = userRepository.findAll(null, getPage(pageIndex, pageSize, "name"));
 
         return userMapper.toUsersResumoDto(users);
     }
@@ -33,9 +52,7 @@ public class UserService {
     }
 
     public UserDto save(UserDto userDto) {
-        var bb = new BooleanBuilder();
-        //bb.and(user.cpf.eq(userDto.getCpf()));
-        var isCpfExisting = userRepository.exists(bb);
+        var isCpfExisting = userRepository.existsByCpf(userDto.getCpf());
         if(isCpfExisting) {
             throw new BusinessException("There is already an User with this CPF.");
         }
@@ -50,7 +67,7 @@ public class UserService {
 
         if (Objects.nonNull(userDto.getCpf()) && !userDto.getCpf().equals(userToUpdate.getCpf())) {
             var bb = new BooleanBuilder();
-            //bb.and(user.cpf.eq(userDto.getCpf()));
+            //bb.and(QUsers.u.cpf.eq(userDto.getCpf()));
             //bb.and(user.id.ne(id));
 
             var isCpfExistingInAnotherUser = userRepository.exists(bb);

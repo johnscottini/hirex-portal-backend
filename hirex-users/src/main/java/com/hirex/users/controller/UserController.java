@@ -21,7 +21,7 @@ public class UserController {
 
     @GetMapping
     public List<UserResumoDto> findAll() {
-        return userService.findAll();
+        return userService.findAll(10, 10, "username");
     }
 
     @GetMapping("{id}")
