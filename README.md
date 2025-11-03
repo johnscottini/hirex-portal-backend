@@ -1,1 +1,0 @@
-# hirex-portal-backend
