@@ -27,6 +27,7 @@
         <module>users</module>
         <module>gateway</module>
         <module>discovery</module>
+        <module>vacancy</module>
     </modules>
 
     <dependencyManagement>
@@ -75,8 +76,15 @@
                 </plugin>
 
                 <plugin>
-                    <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
+                    <groupId>org.springframework.boot</groupId>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>repackage</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>

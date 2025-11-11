@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vacancy-config
+  namespace: dev
+data:
+  SERVER_PORT: "8082"
+  EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://discovery.dev.svc.cluster.local:8761/eureka"
+  DB_HOST: "postgres.dev.svc.cluster.local"
+  DB_PORT: "5432"
+  DB_NAME: "vacancydb"

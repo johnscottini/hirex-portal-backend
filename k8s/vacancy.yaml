@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vacancy-service
+  namespace: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: vacancy-service }
+  template:
+    metadata:
+      labels: { app: vacancy-service }
+    spec:
+      containers:
+        - name: vacancy-service
+          image: jonathanscottini/vacancy-service:dev
+          ports:
+            - containerPort: 8082
+          envFrom:
+            - configMapRef: { name: vacancy-config }
+            - secretRef:    { name: vacancy-secret }
+          env:
+            - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+              value: "false"
+            - name: EUREKA_INSTANCE_HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://$(DB_HOST):$(DB_PORT)/$(DB_NAME)"
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom: { secretKeyRef: { name: vacancy-secret, key: DB_USERNAME } }
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom: { secretKeyRef: { name: vacancy-secret, key: DB_PASSWORD } }
+            - name: SPRING_PROFILES_ACTIVE
+              value: "k8s"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vacancy-service
+  namespace: dev
+spec:
+  selector: { app: vacancy-service }
+  ports:
+    - name: http
+      port: 8082
+      targetPort: 8082
+  type: ClusterIP
