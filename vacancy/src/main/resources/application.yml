@@ -18,6 +18,11 @@ spring:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8081/realms/hirex
 
 eureka:
   instance:

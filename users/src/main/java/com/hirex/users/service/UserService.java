@@ -1,6 +1,6 @@
 package com.hirex.users.service;
 
-import com.hirex.common.pagination.PageUtils;
+import com.hirex.common.utils.PageUtils;
 import com.hirex.users.UserMapper;
 import com.hirex.users.UserRepository;
 import com.hirex.users.dto.UserDto;

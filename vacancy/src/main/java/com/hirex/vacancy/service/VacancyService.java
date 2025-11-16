@@ -1,6 +1,6 @@
 package com.hirex.vacancy.service;
 
-import com.hirex.common.pagination.PageUtils;
+import com.hirex.common.utils.PageUtils;
 import com.hirex.vacancy.VacancyMapper;
 import com.hirex.vacancy.VacancyRepository;
 import com.hirex.vacancy.dto.VacancyDto;

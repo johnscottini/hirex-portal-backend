@@ -1,4 +1,4 @@
-package com.hirex.common.pagination;
+package com.hirex.common.utils;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;

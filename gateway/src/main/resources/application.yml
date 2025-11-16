@@ -23,6 +23,12 @@ spring:
       locator:
         enabled: true
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8081/realms/hirex
+
 eureka:
   instance:
     prefer-ip-address: true
