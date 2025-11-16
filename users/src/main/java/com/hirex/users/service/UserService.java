@@ -1,13 +1,11 @@
 package com.hirex.users.service;
 
+import com.hirex.common.pagination.PageUtils;
 import com.hirex.users.UserMapper;
 import com.hirex.users.UserRepository;
 import com.hirex.users.dto.UserDto;
 import com.hirex.users.dto.UserResumoDto;
 import lombok.RequiredArgsConstructor;
-import org.apache.logging.log4j.util.Strings;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,24 +15,12 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class UserService {
 
-    protected PageRequest getPage(Integer pageIndex, Integer pageSizer, String sortField){
-        return PageRequest.of(pageIndex, pageSizer, getSortExp(sortField));
-    }
-    protected Sort getSortExp(String sortField) {
-        if(Strings.isBlank(sortField)){
-            return Sort.unsorted();
-        }
-
-        var direction = Sort.Direction.ASC;
-        return Sort.by(direction, sortField);
-    }
-
     private final UserMapper userMapper;
     private final UserRepository userRepository;
 
     public List<UserResumoDto> findAll(Integer pageIndex, Integer pageSize, String sortField) {
 
-        var users = userRepository.findAll(getPage(pageIndex, pageSize, "username"));
+        var users = userRepository.findAll(PageUtils.page(pageIndex, pageSize, "username"));
 
         return userMapper.toUsersResumoDto(users);
     }
