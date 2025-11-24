@@ -3,10 +3,12 @@ package com.hirex.users.service;
 import com.hirex.common.utils.PageUtils;
 import com.hirex.users.UserMapper;
 import com.hirex.users.UserRepository;
+import com.hirex.users.domain.User;
 import com.hirex.users.dto.UserDto;
 import com.hirex.users.dto.UserResumoDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
@@ -36,6 +38,9 @@ public class UserService {
         if(isCpfExisting) {
             throw new IllegalArgumentException("There is already an User with this CPF.");
         }
+       if (userDto.getKeycloakId() == null || userDto.getKeycloakId().isBlank()) {
+            throw new IllegalArgumentException("Keycloak ID (sub) is required to create a user.");
+        }
 
         var userEntity = userMapper.toUser(userDto);
         var userSaved = userRepository.save(userEntity);
@@ -59,5 +64,27 @@ public class UserService {
     public void delete(Long id) {
         var user = userRepository.findById(id);
         userRepository.deleteById(id);
+    }
+
+    @Transactional
+    public UserDto ensureAndGetByKeycloakIdentity(String keycloakId, String username, String email, boolean emailVerified) {
+        User user = userRepository.findByKeycloakId(keycloakId)
+                .orElseGet(() -> {
+                    User u = new User();
+                    u.setKeycloakId(keycloakId);
+                    u.setUsername(username);
+                    u.setEmail(email);
+                    u.setEmailVerified(emailVerified);
+                    u.setEnabled(true);
+                    return userRepository.save(u);
+                });
+
+        boolean changed = false;
+        if (Objects.nonNull(username) && !username.equals(user.getUsername())) { user.setUsername(username); changed = true; }
+        if (Objects.nonNull(email) && !email.equals(user.getEmail())) { user.setEmail(email); changed = true; }
+        if (Objects.isNull(user.getEmailVerified()) || !user.getEmailVerified().equals(emailVerified)) { user.setEmailVerified(emailVerified); changed = true; }
+        if (changed) { user = userRepository.save(user); }
+
+        return userMapper.toUserDto(user);
     }
 }

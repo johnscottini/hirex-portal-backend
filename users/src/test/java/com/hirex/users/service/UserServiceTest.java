@@ -50,7 +50,6 @@ class UserServiceTest {
         userEntity.setGender(Gender.M);
         userEntity.setBirthDate(LocalDate.of(1990, 1, 1));
         userEntity.setEmail("john@ex.com");
-        userEntity.setPassword("secret");
 
         userDto = new UserDto();
         userDto.setId(1L);
@@ -60,7 +59,7 @@ class UserServiceTest {
         userDto.setGender(Gender.M);
         userDto.setBirthDate(LocalDate.of(1990, 1, 1));
         userDto.setEmail("john@ex.com");
-        userDto.setPassword("secret");
+        userDto.setKeycloakId("kc-123");
     }
 
     @Test
