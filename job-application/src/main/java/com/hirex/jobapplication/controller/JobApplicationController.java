@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/applications")
+@RequestMapping("api/applications")
 @RequiredArgsConstructor
 public class JobApplicationController {
 

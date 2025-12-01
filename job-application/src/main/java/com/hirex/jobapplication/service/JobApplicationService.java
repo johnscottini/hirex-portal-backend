@@ -1,5 +1,8 @@
 package com.hirex.jobapplication.service;
 
+import com.hirex.common.exception.AlreadyAppliedException;
+import com.hirex.common.exception.UserNotFoundException;
+import com.hirex.common.exception.VacancyNotFoundException;
 import com.hirex.common.utils.PageUtils;
 import com.hirex.jobapplication.JobApplicationMapper;
 import com.hirex.jobapplication.JobApplicationRepository;
@@ -27,17 +30,17 @@ public class JobApplicationService {
 
     public JobApplicationDto apply(Long candidateId, Long vacancyId) {
         if (repository.existsByCandidateIdAndVacancyId(candidateId, vacancyId)) {
-            throw new IllegalStateException("Candidate already applied to this vacancy.");
+            throw new AlreadyAppliedException("Candidate already applied to this vacancy.");
         }
 
         UserResponse user = userClient.getUserById(candidateId);
         if (Objects.isNull(user)) {
-            throw new RuntimeException("User not found: " + candidateId);
+            throw new UserNotFoundException("User not found with id: " + candidateId);
         }
 
         var vacancy = vacancyClient.getVacancyById(vacancyId);
         if (Objects.isNull(vacancy)) {
-            throw new RuntimeException("Vacancy not found: " + vacancyId);
+            throw new VacancyNotFoundException("Vacancy not found with id: " + vacancyId);
         }
 
         if (!Objects.equals(vacancy.getStatus(), VacancyStatus.OPEN)) {
