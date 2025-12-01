@@ -1,0 +1,129 @@
+version: "3.9"
+
+services:
+  postgres-users:
+    image: postgres:16-alpine
+    container_name: postgres-users
+    environment:
+      POSTGRES_DB: usersdb
+      POSTGRES_USER: ${USERS_DB_USERNAME}
+      POSTGRES_PASSWORD: ${USERS_DB_PASSWORD}
+    ports:
+      - "5433:5432"
+    networks:
+      - hirex-net
+
+  postgres-vacancy:
+    image: postgres:16-alpine
+    container_name: postgres-vacancy
+    environment:
+      POSTGRES_DB: vacancydb
+      POSTGRES_USER: ${VACANCY_DB_USERNAME}
+      POSTGRES_PASSWORD: ${VACANCY_DB_PASSWORD}
+    ports:
+      - "5434:5432"
+    networks:
+      - hirex-net
+
+  mongo-job:
+    image: mongo:7
+    container_name: mongo-job
+    ports:
+      - "27017:27017"
+    networks:
+      - hirex-net
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.0
+    container_name: keycloak
+    command: ["start-dev", "--http-port=8081"]
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8081:8081"
+    networks:
+      - hirex-net
+
+  discovery:
+    build: ./discovery
+    container_name: discovery
+    environment:
+      SERVER_PORT: 8761
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"
+      EUREKA_CLIENT_FETCH_REGISTRY: "false"
+      SPRING_APPLICATION_NAME: discovery
+    ports:
+      - "8761:8761"
+    networks:
+      - hirex-net
+
+  gateway:
+    build: ./gateway
+    container_name: gateway
+    depends_on:
+      - discovery
+      - keycloak
+    environment:
+      SERVER_PORT: 8080
+      SPRING_APPLICATION_NAME: gateway-service
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery:8761/eureka/
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8081/realms/hirex/protocol/openid-connect/certs
+    ports:
+      - "8080:8080"
+    networks:
+      - hirex-net
+
+  users-service:
+    build: ./users
+    container_name: users-service
+    depends_on:
+      - discovery
+      - postgres-users
+    environment:
+      SERVER_PORT: 8083
+      SPRING_APPLICATION_NAME: users-service
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery:8761/eureka/
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-users:5432/usersdb
+      SPRING_DATASOURCE_USERNAME: ${USERS_DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${USERS_DB_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8081/realms/hirex/protocol/openid-connect/certs
+    networks:
+      - hirex-net
+
+  vacancy-service:
+    build: ./vacancy
+    container_name: vacancy-service
+    depends_on:
+      - discovery
+      - postgres-vacancy
+    environment:
+      SERVER_PORT: 8082
+      SPRING_APPLICATION_NAME: vacancy-service
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery:8761/eureka/
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-vacancy:5432/vacancydb
+      SPRING_DATASOURCE_USERNAME: ${VACANCY_DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${VACANCY_DB_PASSWORD}
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8081/realms/hirex/protocol/openid-connect/certs
+    networks:
+      - hirex-net
+
+  job-application-service:
+    build: ./job-application
+    container_name: job-application-service
+    depends_on:
+      - discovery
+      - mongo-job
+    environment:
+      SERVER_PORT: 8084
+      SPRING_APPLICATION_NAME: jobapplication-service
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery:8761/eureka/
+      SPRING_DATA_MONGODB_URI: mongodb://mongo-job:27017/jobapplication
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8081/realms/hirex/protocol/openid-connect/certs
+    networks:
+      - hirex-net
+
+networks:
+  hirex-net:
+    driver: bridge
