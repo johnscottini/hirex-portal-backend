@@ -19,6 +19,12 @@ spring:
             - Path=/vacancy/**
           filters:
             - StripPrefix=1
+        - id: jobapplication_route
+          uri: lb://jobapplication-service
+          predicates:
+            - Path=/jobapplication/**
+          filters:
+            - StripPrefix=1
     discovery:
       locator:
         enabled: true

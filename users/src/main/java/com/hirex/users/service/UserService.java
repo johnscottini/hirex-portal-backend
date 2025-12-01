@@ -30,7 +30,6 @@ public class UserService {
     public UserDto get(Long id) {
         var users = userRepository.findById(id).orElse(null);
         return userMapper.toUserDto(users);
-
     }
 
     public UserDto save(UserDto userDto) {
