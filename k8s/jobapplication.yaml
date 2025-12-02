@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jobapplication-service
+  namespace: hirex
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jobapplication-service
+  template:
+    metadata:
+      labels:
+        app: jobapplication-service
+    spec:
+      containers:
+        - name: jobapplication-service
+          image: jonathanscottini/jobapplication-service:1.0
+          env:
+            - name: SERVER_PORT
+              value: "8084"
+            - name: SPRING_APPLICATION_NAME
+              value: "jobapplication-service"
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: "http://discovery:8761/eureka/"
+            - name: SPRING_DATA_MONGODB_URI
+              value: "mongodb://mongo-job:27017/jobapplication"
+            - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI
+              value: "http://keycloak:8081/realms/hirex/protocol/openid-connect/certs"
+          ports:
+            - containerPort: 8084
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jobapplication-service
+  namespace: hirex
+spec:
+  selector:
+    app: jobapplication-service
+  ports:
+    - port: 8084
+      targetPort: 8084
