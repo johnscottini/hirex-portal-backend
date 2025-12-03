@@ -14,11 +14,13 @@ import com.hirex.jobapplication.dto.JobApplicationDto;
 import com.hirex.jobapplication.dto.JobApplicationResumoDto;
 import com.hirex.jobapplication.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class JobApplicationService {
@@ -30,28 +32,32 @@ public class JobApplicationService {
 
     public JobApplicationDto apply(Long candidateId, Long vacancyId) {
         if (repository.existsByCandidateIdAndVacancyId(candidateId, vacancyId)) {
+            log.error("The candidate already applied to this vacancy. Candidate id={}", candidateId);
             throw new AlreadyAppliedException("Candidate already applied to this vacancy.");
         }
 
         UserResponse user = userClient.getUserById(candidateId);
         if (Objects.isNull(user)) {
-            throw new UserNotFoundException("User not found with id: " + candidateId);
+            log.error("user not found with id={}", candidateId);
+            throw new UserNotFoundException("User not found.");
         }
 
         var vacancy = vacancyClient.getVacancyById(vacancyId);
         if (Objects.isNull(vacancy)) {
-            throw new VacancyNotFoundException("Vacancy not found with id: " + vacancyId);
+            log.error("Vacancy not found with id={}", vacancyId);
+            throw new VacancyNotFoundException("Vacancy not found.");
         }
 
         if (!Objects.equals(vacancy.getStatus(), VacancyStatus.OPEN)) {
-            throw new RuntimeException("Vacancy is not open for applications: " + vacancyId);
+            throw new RuntimeException("Vacancy is not open for applications.");
         }
 
         if (!user.getEnabled()) {
-            throw new RuntimeException("User is disabled: " + candidateId);
+            throw new RuntimeException("User is disabled.");
         }
 
         var app = JobApplication.create(candidateId, vacancyId);
+        log.info("Successfully applied to the vacancy, User id={} and vacancy id={}", candidateId, vacancyId);
         return jobApplicationMapper.toJobApplicationDto(repository.save(app));
     }
 
@@ -66,6 +72,7 @@ public class JobApplicationService {
     }
 
     public List<JobApplicationResumoDto> findAll(Integer pageIndex, Integer pageSize, String sortField) {
+        log.info("Listing all job applications:");
         var applications = repository.findAll(PageUtils.page(pageIndex, pageSize, sortField));
 
         return jobApplicationMapper.toJobApplicationsResumoDto(applications);

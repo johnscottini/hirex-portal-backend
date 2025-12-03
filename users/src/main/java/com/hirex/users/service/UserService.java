@@ -7,12 +7,14 @@ import com.hirex.users.domain.User;
 import com.hirex.users.dto.UserDto;
 import com.hirex.users.dto.UserResumoDto;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -21,8 +23,8 @@ public class UserService {
     private final UserRepository userRepository;
 
     public List<UserResumoDto> findAll(Integer pageIndex, Integer pageSize, String sortField) {
-
-        var users = userRepository.findAll(PageUtils.page(pageIndex, pageSize, "username"));
+        log.info("Listing all users:");
+        var users = userRepository.findAll(PageUtils.page(pageIndex, pageSize, sortField));
 
         return userMapper.toUsersResumoDto(users);
     }
@@ -35,14 +37,17 @@ public class UserService {
     public UserDto save(UserDto userDto) {
         var isCpfExisting = userRepository.existsByCpf(userDto.getCpf());
         if(isCpfExisting) {
+            log.error("User with CPF {} already exists", userDto.getCpf());
             throw new IllegalArgumentException("There is already an User with this CPF.");
         }
        if (userDto.getKeycloakId() == null || userDto.getKeycloakId().isBlank()) {
+           log.error("Keycloak ID was not found.");
             throw new IllegalArgumentException("Keycloak ID (sub) is required to create a user.");
         }
 
         var userEntity = userMapper.toUser(userDto);
         var userSaved = userRepository.save(userEntity);
+        log.info("Successfully saved new user.");
         return userMapper.toUserDto(userSaved);
     }
 
@@ -52,6 +57,7 @@ public class UserService {
         if (Objects.nonNull(userDto.getCpf()) && !userDto.getCpf().equals(userToUpdate.getCpf())) {
             var isCpfExistingInAnotherUser = userRepository.existsByCpf(userDto.getCpf());
             if (isCpfExistingInAnotherUser) {
+                log.error("Cpf {} already in use by another user", userDto.getCpf());
                 throw new IllegalArgumentException("This CPF is already in use by another user.");
             }
         }
@@ -63,6 +69,7 @@ public class UserService {
     public void delete(Long id) {
         var user = userRepository.findById(id);
         userRepository.deleteById(id);
+        log.info("Successfully deleted user with id {}", id);
     }
 
     @Transactional
