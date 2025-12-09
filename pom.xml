@@ -27,6 +27,8 @@
         <module>users</module>
         <module>gateway</module>
         <module>discovery</module>
+        <module>vacancy</module>
+        <module>job-application</module>
     </modules>
 
     <dependencyManagement>

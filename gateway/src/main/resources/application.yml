@@ -13,9 +13,27 @@ spring:
             - Path=/users/**
           filters:
             - StripPrefix=1
+        - id: vacancy_route
+          uri: lb://vacancy-service
+          predicates:
+            - Path=/vacancy/**
+          filters:
+            - StripPrefix=1
+        - id: jobapplication_route
+          uri: lb://jobapplication-service
+          predicates:
+            - Path=/jobapplication/**
+          filters:
+            - StripPrefix=1
     discovery:
       locator:
         enabled: true
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI:http://localhost:8081/realms/hirex/protocol/openid-connect/certs}
 
 eureka:
   instance:

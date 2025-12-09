@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: users-service
+  namespace: hirex
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: users-service
+  template:
+    metadata:
+      labels:
+        app: users-service
+    spec:
+      containers:
+        - name: users-service
+          image: jonathanscottini/users-service:1.0
+          env:
+            - name: SERVER_PORT
+              value: "8083"
+            - name: SPRING_APPLICATION_NAME
+              value: "users-service"
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: "http://discovery:8761/eureka/"
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://postgres-users:5432/usersdb"
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-users-config
+                  key: POSTGRES_USER
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-users-secret
+                  key: POSTGRES_PASSWORD
+            - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI
+              value: "http://keycloak:8081/realms/hirex/protocol/openid-connect/certs"
+          ports:
+            - containerPort: 8083
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: users-service
+  namespace: hirex
+spec:
+  selector:
+    app: users-service
+  ports:
+    - port: 8083
+      targetPort: 8083

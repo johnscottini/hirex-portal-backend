@@ -26,11 +26,11 @@ public class User {
     @Column(nullable = false, unique = true, length = 100)
     private String username;
 
-    @Column(nullable = false)
-    private String password;
-
     @Column(nullable = false, unique = true, length = 150)
     private String email;
+
+    @Column(name = "keycloak_id", nullable = false, unique = true, length = 64)
+    private String keycloakId;
 
     @Column(length = 11, unique = true)
     private String cpf;
@@ -44,4 +44,10 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     private Gender gender;
+
+    @Column(name = "enabled")
+    private Boolean enabled;
+
+    @Column(name = "email_verified")
+    private Boolean emailVerified;
 }

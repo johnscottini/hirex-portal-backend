@@ -12,11 +12,14 @@ public class UserDto {
     private String username;
     private String fullName;
 
-    private String password;
-
     private String email;
 
     private String cpf;
     private Gender gender;
     private LocalDate birthDate;
+
+    private String keycloakId;
+
+    private Boolean enabled;
+    private Boolean emailVerified;
 }
