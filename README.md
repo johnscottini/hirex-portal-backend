@@ -16,7 +16,7 @@ The long-term goal is to support intelligent matching between candidates and vac
 
 ---
 
-## 🧱 Architecture Overview
+## Architecture Overview
 
 The solution follows a **decoupled microservices architecture**, composed of:
 
@@ -49,7 +49,7 @@ Each microservice includes:
 
 ---
 
-## 🏗️ Tech Stack
+## Tech Stack
 
 ### Language / Build
 - **Java 17**
@@ -83,7 +83,7 @@ Each microservice includes:
 
 ---
 
-## 🔐 Security
+## Security
 
 All backend services (gateway, users, vacancy, job-application) use:
 
@@ -98,3 +98,45 @@ The Gateway routes authenticated requests:
 /users/** → lb://users-service
 /vacancy/** → lb://vacancy-service
 /job-application/** → lb://job-application-service
+
+```
+
+
+## ️ Running the Application on Kubernetes
+
+This project includes Kubernetes manifests in the `k8s/` directory that allow you to deploy the entire microservices architecture into a local cluster such as **Docker Desktop**, **Minikube**, or **kind**.
+
+### ✅ Pre-requisites
+
+Before deploying, make sure you have:
+
+- A local Kubernetes cluster running  
+  (Docker Desktop or Minikube)
+- `kubectl` configured and pointing to your cluster
+- Docker images built and available
+- Keycloak, PostgreSQL, and other external dependencies running  
+  (locally or via Docker Compose)
+
+---
+
+### 🚀 Deploying to Kubernetes
+
+1. **Create the namespace**
+
+   ```bash
+   kubectl apply -f k8s/namespace.yaml
+
+2. **Apply all service manifests**
+
+   ```bash
+   kubectl apply -f k8s/
+
+3. **Verify that all pods are running**
+
+   ```bash
+   kubectl get pods -n hirex
+
+4. **Check the Api Gateway port and start using the api**
+
+   ```bash
+   kubectl get svc gateway -n hirex
